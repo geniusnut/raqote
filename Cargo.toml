@@ -18,7 +18,7 @@ lyon_geom = "1.0"
 pathfinder_geometry = { version = "0.5", optional = true }
 png = { version = "0.17", optional = true }
 typed-arena = "2.0"
-sw-composite = "0.7.15"
+sw-composite = { git="https://github.com/geniusnut/sw-composite.git"}
 
 [features]
 default = ["text", "png"]

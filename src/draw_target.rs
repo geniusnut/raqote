@@ -813,8 +813,10 @@ impl<Backing : AsRef<[u32]> + AsMut<[u32]>> DrawTarget<Backing> {
             let bounds = font.raster_bounds(
                 *id,
                 point_size,
-                fk::Transform2F::row_major(self.transform.m11, self.transform.m12, self.transform.m21, self.transform.m22, 0., 0.)
-                    .translate(fk::vec2f(position.x, position.y)),
+                fk::Transform2F::row_major(self.transform.m11, self.transform.m21,
+                                           self.transform.m12, self.transform.m22,
+                                           self.transform.m31, self.transform.m32)
+                    * fk::Transform2F::from_translation(fk::vec2f(position.x, position.y)),
                 fk::HintingOptions::None,
                 antialias_mode,
             );
@@ -836,15 +838,23 @@ impl<Backing : AsRef<[u32]> + AsMut<[u32]>> DrawTarget<Backing> {
             fk::Format::A8,
         );
         for (id, position) in ids.iter().zip(positions.iter()) {
-            let mut position = self.transform.transform_point(*position);
-            position.x -= combined_bounds.origin.x as f32;
-            position.y -= combined_bounds.origin.y as f32;
+            // let mut position = self.transform.transform_point(*position);
+            // position.x -= combined_bounds.origin.x as f32;
+            // position.y -= combined_bounds.origin.y as f32;
+            let adjust = fk::Transform2F::from_translation(fk::vec2f(
+                -combined_bounds.origin.x as f32,
+                -combined_bounds.origin.y as f32,
+            ));
             font.rasterize_glyph(
                 &mut canvas,
                 *id,
                 point_size,
-                fk::Transform2F::row_major(self.transform.m11, self.transform.m12, self.transform.m21, self.transform.m22, 0., 0.)
-                    .translate(fk::vec2f(position.x, position.y)),
+                adjust * fk::Transform2F::row_major(
+                    self.transform.m11, self.transform.m21, self.transform.m12,
+                    self.transform.m22, self.transform.m31, self.transform.m32
+                )
+                     * fk::Transform2F::from_translation(fk::vec2f(position.x, position.y)),
+                    // .translate(fk::vec2f(position.x, position.y)),
                 fk::HintingOptions::None,
                 antialias_mode,
             ).unwrap();
